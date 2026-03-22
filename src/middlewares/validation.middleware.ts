@@ -11,7 +11,7 @@ export const validateBody = (schema: z.ZodSchema) => {
     } catch (error) {
       if (error instanceof ZodError) {
         // Format error messages
-        const errorMessages = error.errors.map((err) => ({
+        const errorMessages = error.issues.map((err) => ({
           field: err.path.join('.'),
           message: err.message,
         }));
@@ -30,11 +30,11 @@ export const validateBody = (schema: z.ZodSchema) => {
 export const validateParams = (schema: z.ZodSchema) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      req.params = await schema.parseAsync(req.params);
+      req.params = (await schema.parseAsync(req.params)) as any;
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const errorMessages = error.errors.map((err) => ({
+        const errorMessages = error.issues.map((err) => ({
           field: err.path.join('.'),
           message: err.message,
         }));

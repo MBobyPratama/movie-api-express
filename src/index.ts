@@ -50,7 +50,7 @@ app.get('/users', async (req, res) => {
 // READ - Ambil user berdasarkan ID
 app.get('/users/:id', validateParams(userIdSchema), async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     const user = await db
       .select()
       .from(usersTable)
@@ -71,7 +71,7 @@ app.put(
   validateBody(updateUserSchema),
   async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
+      const id = parseInt(req.params.id as string);
       const { name, age, email } = req.body;
       const updatedUser = await db
         .update(usersTable)
@@ -91,7 +91,7 @@ app.put(
 // DELETE - Hapus user berdasarkan ID
 app.delete('/users/:id', validateParams(userIdSchema), async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     const deletedUser = await db
       .delete(usersTable)
       .where(eq(usersTable.id, id))
