@@ -1,34 +1,107 @@
-import express, { Request, Response } from "express";
-import { pool } from "./db";
+import 'dotenv/config';
+import express, { Request, Response } from 'express';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { eq } from 'drizzle-orm';
+import { usersTable } from './db/schema';
+import {
+  validateBody,
+  validateParams,
+} from './middlewares/validation.middleware';
+import {
+  createUserSchema,
+  updateUserSchema,
+  userIdSchema,
+} from './schemas/users.schema';
 
 const PORT = 3000;
 const app = express();
+const db = drizzle(process.env.DATABASE_URL!);
 
 app.use(express.json());
 
-app.post('/add-user', async (req: Request, res: Response) => {
-  const { nama, email } = req.body;
-
-  if (!nama || !email) {
-    return res.status(400).json({ error: 'Name and email are required' });
-  }
-
-  try {
-    const queryText = 'INSERT INTO users(nama, email) VALUES($1, $2) RETURNING *';
-    const values = [nama, email];
-    const result = await pool.query(queryText, values);
-
-    res.status(201).json({
-      message: 'User added successfully',
-      user: result.rows[0],
-    });
-  } catch (err: any) {
-    console.error('Error adding user:', err);
-    if (err.code === '23505') { // Unique violation
-      res.status(409).json({ error: 'Email already exists' });
+// CREATE - Tambah user baru
+app.post(
+  '/users',
+  validateBody(createUserSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const { name, age, email } = req.body;
+      const newUser = await db
+        .insert(usersTable)
+        .values({ name, age, email })
+        .returning();
+      res.status(201).json(newUser[0]);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to add user' });
     }
+  },
+);
 
-    res.status(500).json({ error: 'Internal server error' });
+// READ - Ambil semua user
+app.get('/users', async (req, res) => {
+  try {
+    const users = await db.select().from(usersTable);
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// READ - Ambil user berdasarkan ID
+app.get('/users/:id', validateParams(userIdSchema), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const user = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, id));
+    if (user.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// UPDATE - Update user berdasarkan ID
+app.put(
+  '/users/:id',
+  validateParams(userIdSchema),
+  validateBody(updateUserSchema),
+  async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { name, age, email } = req.body;
+      const updatedUser = await db
+        .update(usersTable)
+        .set({ name, age, email })
+        .where(eq(usersTable.id, id))
+        .returning();
+      if (updatedUser.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.json(updatedUser[0]);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update user' });
+    }
+  },
+);
+
+// DELETE - Hapus user berdasarkan ID
+app.delete('/users/:id', validateParams(userIdSchema), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const deletedUser = await db
+      .delete(usersTable)
+      .where(eq(usersTable.id, id))
+      .returning();
+    if (deletedUser.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete user' });
   }
 });
 
