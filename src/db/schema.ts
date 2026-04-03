@@ -6,3 +6,11 @@ export const usersTable = pgTable('users', {
   age: integer().notNull(),
   email: varchar({ length: 255 }).notNull().unique(),
 });
+
+export const moviesTable = pgTable('movies', {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  title: varchar({ length: 255 }).notNull(),
+  genre: varchar({ length: 255 }).notNull(),
+  releaseYear: integer().notNull(),
+  posterUrl: varchar({ length: 255 }),
+});
