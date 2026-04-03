@@ -8,13 +8,11 @@ export const createUserSchema = z.object({
     .max(255, 'Nama maksimal 255 karakter'),
 
   age: z
-    .number()
     .int('Umur harus bilangan bulat')
     .min(1, 'Umur minimal 1 tahun')
     .max(150, 'Umur tidak valid'),
 
   email: z
-    .string()
     .email('Format email tidak valid')
     .max(255, 'Email maksimal 255 karakter'),
 });
@@ -28,14 +26,12 @@ export const updateUserSchema = z.object({
     .optional(),
 
   age: z
-    .number()
     .int('Umur harus bilangan bulat')
     .min(1, 'Umur minimal 1 tahun')
     .max(150, 'Umur tidak valid')
     .optional(),
 
   email: z
-    .string()
     .email('Format email tidak valid')
     .max(255, 'Email maksimal 255 karakter')
     .optional(),
