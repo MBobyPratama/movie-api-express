@@ -1,27 +1,25 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
-// Buat folder 'uploads' otomatis jika belum ada
-const uploadDirectory = 'uploads';
-if (!fs.existsSync(uploadDirectory)) {
-  fs.mkdirSync(uploadDirectory);
-}
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-// Konfigurasi tempat penyimpanan dan penamaan file
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDirectory); // Simpan di folder /uploads
-  },
-  filename: function (req, file, cb) {
-    // Format nama file: timestamp_namaAsli (agar tidak ada nama duplikat)
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    return {
+      folder: 'movie-api/posters', // Nama folder di dashboard Cloudinary
+      allowed_formats: ['jpeg', 'png', 'jpg', 'webp'], // Batasi format
+    };
   },
 });
 
-// Inisialisasi multer
+// 3. Inisialisasi multer dengan storage baru
 export const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Batasan ukuran file maksimal 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, // batasi 5MB
 });

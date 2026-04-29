@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { usersTable } from '../db/schema';
@@ -7,10 +8,14 @@ const db = drizzle(process.env.DATABASE_URL!);
 
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, age, email } = req.body;
+    const { name, age, email, password } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const newUser = await db
       .insert(usersTable)
-      .values({ name, age, email })
+      .values({ name, age, email, password: hashedPassword })
       .returning();
     res.status(201).json(newUser[0]);
   } catch (error) {
@@ -47,10 +52,17 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id as string);
-    const { name, age, email } = req.body;
+    const { name, age, email, password } = req.body;
+
+    const updateData: any = { name, age, email };
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+
     const updatedUser = await db
       .update(usersTable)
-      .set({ name, age, email })
+      .set(updateData)
       .where(eq(usersTable.id, id))
       .returning();
 
