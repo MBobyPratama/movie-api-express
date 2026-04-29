@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "ESNext", // Use ESNext for ESM
     "target": "ES2020", // Target modern ECMAScript versions
-    "moduleResolution": "node",
+    "moduleResolution": "bundler", // Modern module resolution for ESM
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist", // Output directory for compiled files
@@ -11,10 +11,6 @@
     "resolveJsonModule": true, // Include JSON imports
     "forceConsistentCasingInFileNames": true,
     "noEmit": false, // Allow emitting output
-    "isolatedModules": true, // Required for using ESM modules
-    "baseUrl": ".", // Allow absolute imports relative to project root
-    "paths": {
-      "*": ["node_modules/*"]
-    }
+    "isolatedModules": true // Required for using ESM modules
   }
 }

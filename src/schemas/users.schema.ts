@@ -15,6 +15,11 @@ export const createUserSchema = z.object({
   email: z
     .email('Format email tidak valid')
     .max(255, 'Email maksimal 255 karakter'),
+
+  password: z
+    .string()
+    .min(6, 'Password minimal 6 karakter')
+    .max(255, 'Password maksimal 255 karakter'),
 });
 
 // Schema untuk UPDATE user (semua field optional)

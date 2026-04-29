@@ -93,3 +93,50 @@ export const logout = async (req: Request, res: Response) => {
   // Untuk level pemula: kita cukup beri response sukses, klien yang harus hapus tokennya.
   res.json({ message: 'Logout berhasil. Silakan hapus token di sisi klien.' });
 };
+
+export const createAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { name, age, email, password } = req.body;
+
+    // Cek apakah email sudah terdaftar
+    const existingUser = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email));
+    if (existingUser.length > 0) {
+      return res.status(400).json({ error: 'Email sudah terdaftar' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Insert user baru dengan role 'admin'
+    const newAdmin = await db
+      .insert(usersTable)
+      .values({
+        name,
+        age,
+        email,
+        password: hashedPassword,
+        role: 'admin',
+      })
+      .returning({
+        id: usersTable.id,
+        name: usersTable.name,
+        email: usersTable.email,
+        age: usersTable.age,
+        role: usersTable.role,
+      });
+
+    res
+      .status(201)
+      .json({ message: 'Admin berhasil dibuat', user: newAdmin[0] });
+  } catch (error) {
+    next(error);
+  }
+};
