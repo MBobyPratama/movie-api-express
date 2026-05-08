@@ -1,11 +1,16 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swagger.js';
 import appRoutes from './routes/index.js';
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+// Setup Swagger UI untuk dokumentasi API
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Menghubungkan semua route dari folder routes
 app.use('/api', appRoutes);
