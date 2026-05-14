@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { eq, ilike } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { v2 as cloudinary } from 'cloudinary';
-import { moviesTable } from '../db/schema';
+import { moviesTable } from '../db/schema.js';
 
 const db = drizzle(process.env.DATABASE_URL!);
 

@@ -2,19 +2,19 @@ import { Router } from 'express';
 import {
   validateBody,
   validateParams,
-} from '../middlewares/validation.middleware';
+} from '../middlewares/validation.middleware.js';
 import {
   createUserSchema,
   updateUserSchema,
   userIdSchema,
-} from '../schemas/users.schema';
+} from '../schemas/users.schema.js';
 import {
   createUser,
   getAllUsers,
   getUserById,
   updateUser,
   deleteUser,
-} from '../controllers/users.controller';
+} from '../controllers/users.controller.js';
 
 const router = Router();
 
